@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="gu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#35175f">
+  <meta name="description" content="લાહિરી અયનાંશ આધારિત ગુજરાતી વૈદિક જન્માક્ષર, કુંડળી, દશા અને પંચાંગ ગણતરી.">
+  <title>જન્માક્ષર — વૈદિક કુંડળી</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%2335175f'/%3E%3Ccircle cx='32' cy='32' r='14' fill='none' stroke='%23f5c96b' stroke-width='4'/%3E%3Cpath d='M32 7v7M32 50v7M7 32h7M50 32h7M14.3 14.3l5 5M44.7 44.7l5 5M49.7 14.3l-5 5M19.3 44.7l-5 5' stroke='%23f5c96b' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="જન્માક્ષર મુખ્ય પાનું">
+      <span class="brand-mark" aria-hidden="true">☼</span>
+      <span><strong data-i18n="brandTitle">જન્માક્ષર</strong><small data-i18n="brandSub">વૈદિક કુંડળી</small></span>
+    </a>
+    <div class="language-switch" aria-label="Language">
+      <button type="button" data-language="gu" aria-pressed="true">ગુજરાતી</button>
+      <button type="button" data-language="hi" aria-pressed="false">हिन्दी</button>
+      <button type="button" data-language="en" aria-pressed="false">English</button>
+    </div>
+  </header>
+
+  <main id="top" class="page-shell">
+    <section class="intro">
+      <p class="eyebrow" data-i18n="introEyebrow">વ્યક્તિગત જન્મકુંડળી</p>
+      <h1 data-i18n="introTitle">જન્મની વિગતોમાંથી સંપૂર્ણ વૈદિક રિપોર્ટ</h1>
+      <p data-i18n="introDesc">ચોક્કસ પરિણામ માટે જન્મતારીખ, સ્થાનિક સમય અને જન્મસ્થળના અક્ષાંશ–રેખાંશ સાચા દાખલ કરો.</p>
+    </section>
+
+    <div id="workspace" class="workspace awaiting-report">
+      <aside class="input-panel" aria-labelledby="form-title">
+        <div class="panel-heading">
+          <span class="step">01</span>
+          <div><h2 id="form-title" data-i18n="formTitle">જન્મ વિગતો</h2><p data-i18n="formDesc">તમારી માહિતી ઉપકરણની બહાર મોકલાતી નથી.</p></div>
+        </div>
+
+        <form id="birth-form" novalidate>
+          <label class="field full">
+            <span data-i18n="nameLabel">નામ</span>
+            <input id="person-name" name="name" autocomplete="name" placeholder="તમારું નામ લખો" data-i18n-placeholder="namePlaceholder" required>
+          </label>
+
+          <div class="field-row">
+            <label class="field">
+              <span data-i18n="dateLabel">જન્મ તારીખ</span>
+              <input id="birth-date" name="date" type="date" required>
+            </label>
+            <label class="field">
+              <span data-i18n="timeLabel">ચોક્કસ સમય</span>
+              <input id="birth-time" name="time" type="time" step="60" required>
+            </label>
+          </div>
+
+          <label class="field full">
+            <span data-i18n="placeLabel">જન્મસ્થળ</span>
+            <select id="birth-city" name="city" required>
+              <option value="" data-i18n="chooseCity">શહેર પસંદ કરો</option>
+            </select>
+          </label>
+
+          <div class="coordinates">
+            <p><span data-i18n="coordinates">સ્થળના કોર્ડિનેટ</span> <button class="text-button" id="toggle-coordinates" type="button" aria-expanded="false" data-i18n="change">બદલો</button></p>
+            <div id="coordinate-fields" class="coordinate-fields" hidden>
+              <label class="field"><span data-i18n="latitude">અક્ષાંશ</span><input id="latitude" name="latitude" type="number" min="-90" max="90" step="0.0001" required></label>
+              <label class="field"><span data-i18n="longitude">રેખાંશ</span><input id="longitude" name="longitude" type="number" min="-180" max="180" step="0.0001" required></label>
+              <label class="field"><span data-i18n="timezone">UTC અંતર</span><input id="timezone" name="timezone" type="number" min="-12" max="14" step="0.25" value="5.5" required></label>
+            </div>
+          </div>
+
+          <p id="form-error" class="form-error" role="alert" hidden></p>
+          <button id="create-report" class="primary-button" type="submit"><span id="create-report-label" data-i18n="create">જન્માક્ષર બનાવો</span><b aria-hidden="true">✦</b></button>
+        </form>
+
+        <div class="privacy-note">
+          <span aria-hidden="true">◈</span>
+          <p><strong data-i18n="privacyTitle">ખાનગી ગણતરી</strong> <span data-i18n="privacyText">વિગતો આ બ્રાઉઝરમાં જ પ્રક્રિયા થાય છે.</span></p>
+        </div>
+      </aside>
+
+      <section id="result-stage" class="result-stage" aria-live="polite" hidden>
+        <div id="report" class="report" hidden>
+          <div class="report-top">
+            <div>
+              <p class="eyebrow" data-i18n="reportEyebrow">જન્માક્ષર રિપોર્ટ</p>
+              <h2 id="report-name"></h2>
+              <p id="report-meta" class="report-meta"></p>
+            </div>
+            <div class="report-actions">
+              <button id="reset-report" class="secondary-button reset-button" type="button" data-i18n="reset">નવી કુંડળી / રીસેટ</button>
+              <button id="print-report" class="secondary-button" type="button" data-i18n="print">પ્રિન્ટ / PDF</button>
+            </div>
+          </div>
+
+          <nav class="report-tabs" aria-label="રિપોર્ટ વિભાગો" role="tablist">
+            <button class="tab active" type="button" role="tab" aria-selected="true" data-tab="summary" data-i18n="tabSummary">સારાંશ</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="charts" data-i18n="tabCharts">કુંડળી</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="planets" data-i18n="tabPlanets">ગ્રહો</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="houses" data-i18n="tabHouses">12 ભાવ</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="navamsa" data-i18n="tabNavamsa">નવાંશ D9</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="advanced" data-i18n="tabAdvanced">અદ્યતન</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="dasha" data-i18n="tabDasha">દશા</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="future" data-i18n="tabFuture">ભવિષ્ય</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="marriage" data-i18n="tabMarriage">લગ્ન</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="panchang" data-i18n="tabPanchang">પંચાંગ</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="yoga" data-i18n="tabYoga">યોગ–દોષ</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="reading" data-i18n="tabReading">ફળકથન</button>
+          </nav>
+
+          <div id="tab-summary" class="tab-panel active" role="tabpanel"></div>
+          <div id="tab-charts" class="tab-panel" role="tabpanel" hidden></div>
+          <div id="tab-planets" class="tab-panel" role="tabpanel" hidden></div>
+          <div id="tab-houses" class="tab-panel" role="tabpanel" hidden></div>
+          <div id="tab-navamsa" class="tab-panel" role="tabpanel" hidden></div>
+          <div id="tab-advanced" class="tab-panel" role="tabpanel" hidden></div>
+          <div id="tab-dasha" class="tab-panel" role="tabpanel" hidden></div>
+          <div id="tab-future" class="tab-panel" role="tabpanel" hidden></div>
+          <div id="tab-marriage" class="tab-panel" role="tabpanel" hidden></div>
+          <div id="tab-panchang" class="tab-panel" role="tabpanel" hidden></div>
+          <div id="tab-yoga" class="tab-panel" role="tabpanel" hidden></div>
+          <div id="tab-reading" class="tab-panel" role="tabpanel" hidden></div>
+        </div>
+      </section>
+    </div>
+
+    <p class="disclaimer" data-i18n="disclaimer">આ ગણતરી પરંપરાગત વૈદિક જ્યોતિષીય સિદ્ધાંતો પર આધારિત છે. તેને વૈજ્ઞાનિક નિદાન અથવા જીવનના મહત્વના નિર્ણયનો એકમાત્ર આધાર ન બનાવો.</p>
+  </main>
+
+  <footer><span data-i18n="brandTitle">જન્માક્ષર</span><span data-i18n="footerMethod">ગણતરી: લાહિરી અયનાંશ · Whole Sign ભાવ પદ્ધતિ</span></footer>
+  <script src="./vendor/astronomy.min.js"></script>
+  <script src="./advanced.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
