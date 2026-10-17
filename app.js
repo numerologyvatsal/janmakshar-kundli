@@ -1459,6 +1459,29 @@
     });
   }
 
+  let completePrintState = null;
+
+  function prepareCompleteReportPrint() {
+    if (completePrintState || !latestChart) return;
+    const panels = $$(".tab-panel");
+    const details = Array.from(document.querySelectorAll("#report details"));
+    completePrintState = {
+      panels: panels.map((panel) => ({ panel, hidden: panel.hidden })),
+      details: details.map((item) => ({ item, open: item.open }))
+    };
+    panels.forEach((panel) => { panel.hidden = false; });
+    details.forEach((item) => { item.open = true; });
+    document.body.classList.add("printing-complete-report");
+  }
+
+  function restoreAfterCompletePrint() {
+    if (!completePrintState) return;
+    completePrintState.panels.forEach(({ panel, hidden }) => { panel.hidden = hidden; });
+    completePrintState.details.forEach(({ item, open }) => { item.open = open; });
+    completePrintState = null;
+    document.body.classList.remove("printing-complete-report");
+  }
+
   function setLanguage(language) {
     currentLanguage = ["gu", "hi", "en"].includes(language) ? language : "gu";
     try { localStorage.setItem(LANGUAGE_KEY, currentLanguage); } catch (_) { /* Language still changes for this visit. */ }
@@ -1484,7 +1507,12 @@
   });
   $$(".tab").forEach((button) => button.addEventListener("click", () => activateTab(button.dataset.tab)));
   $$('[data-language]').forEach((button) => button.addEventListener("click", () => setLanguage(button.dataset.language)));
-  $("#print-report").addEventListener("click", () => window.print());
+  window.addEventListener("beforeprint", prepareCompleteReportPrint);
+  window.addEventListener("afterprint", restoreAfterCompletePrint);
+  $("#print-report").addEventListener("click", () => {
+    prepareCompleteReportPrint();
+    requestAnimationFrame(() => window.print());
+  });
   $("#reset-report").addEventListener("click", resetReport);
   form.addEventListener("submit", (event) => {
     event.preventDefault();

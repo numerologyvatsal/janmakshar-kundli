@@ -8,6 +8,7 @@
   let installPrompt = null;
   let waitingWorker = null;
   let reloading = false;
+  let reloadForUpdate = false;
 
   function updateNetworkState() {
     if (networkStatus) networkStatus.hidden = navigator.onLine;
@@ -40,7 +41,7 @@
   if (!("serviceWorker" in navigator)) return;
 
   navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if (reloading) return;
+    if (!reloadForUpdate || reloading) return;
     reloading = true;
     window.location.reload();
   });
@@ -64,6 +65,7 @@
   });
 
   refreshButton?.addEventListener("click", () => {
+    reloadForUpdate = true;
     waitingWorker?.postMessage({ type: "SKIP_WAITING" });
   });
 })();
