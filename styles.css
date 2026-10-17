@@ -54,10 +54,17 @@ button { cursor: pointer; }
 .brand strong, .brand small { display: block; }
 .brand strong { font-size: 1.14rem; letter-spacing: .01em; }
 .brand small { color: var(--muted); font-size: .76rem; }
+.topbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
 .language-switch { display: flex; align-items: center; gap: 4px; padding: 4px; border: 1px solid rgba(53,23,95,.13); border-radius: 12px; background: #f8f4ed; }
 .language-switch button { min-height: 34px; border: 0; border-radius: 8px; padding: 6px 10px; color: var(--muted); background: transparent; font-size: .74rem; font-weight: 800; }
 .language-switch button:hover { color: var(--purple); }
 .language-switch button.active { color: white; background: var(--purple); box-shadow: 0 5px 12px rgba(53,23,95,.18); }
+.install-app { min-height: 42px; padding: 8px 12px; border: 1px solid var(--purple); border-radius: 11px; color: white; background: var(--purple); font-size: .74rem; font-weight: 850; }
+.install-app:hover { background: var(--purple-2); }
+.network-status { padding: 5px 8px; border-radius: 999px; color: #714b0e; background: #f6dfaa; font-size: .66rem; font-weight: 900; }
+.pwa-update { position: fixed; right: 18px; bottom: 18px; z-index: 50; max-width: calc(100% - 36px); padding: 10px 11px 10px 14px; display: flex; align-items: center; gap: 12px; border: 1px solid rgba(255,255,255,.2); border-radius: 13px; color: white; background: var(--purple); box-shadow: 0 14px 38px rgba(37,26,50,.3); font-size: .76rem; }
+.pwa-update[hidden] { display: none; }
+.pwa-update button { min-height: 32px; padding: 5px 10px; border: 0; border-radius: 8px; color: var(--purple); background: var(--gold-soft); font-size: .7rem; font-weight: 900; }
 
 .page-shell { width: min(1380px, calc(100% - 40px)); margin: 0 auto; }
 .intro { max-width: 790px; padding: 44px 0 28px; }
@@ -544,7 +551,9 @@ footer span:first-child { color: var(--gold-soft); font-weight: 850; font-size: 
 @media (max-width: 520px) {
   .topbar { min-height: 66px; padding: 10px 14px; flex-wrap: wrap; }
   .brand-mark { width: 40px; height: 40px; }
+  .topbar-actions { width: 100%; flex-wrap: wrap; justify-content: stretch; }
   .language-switch { width: 100%; }
+  .install-app { flex: 1 1 auto; }
   .language-switch button { flex: 1 1 0; }
   .field-row, .stats-grid, .insight-grid, .panchang-grid, .reading-grid, .current-dasha, .auspicious-grid, .navamsa-dasha-grid { grid-template-columns: 1fr; }
   .time-fields { grid-template-columns: 1fr 1fr; }

@@ -87,15 +87,15 @@
 
   Object.assign(api.copy.gu, {
     secondsLabel:"સેકન્ડ", nodeModeLabel:"રાહુ–કેતુ ગણતરી", meanNode:"Mean Node — પરંપરાગત ડિફૉલ્ટ", trueNode:"True Node — તત્કાલ ગતિ આધારિત", tabExpert:"અંતિમ તારણ",
-    profilesTitle:"સાચવેલી કુંડળીઓ", profilesDesc:"ઘણી વ્યક્તિઓના રિપોર્ટ આ બ્રાઉઝરમાં સાચવો અથવા backup લો.", chooseProfile:"કુંડળી પસંદ કરો", saveProfile:"હાલની કુંડળી સાચવો", loadProfile:"ખોલો", deleteProfile:"દૂર કરો", exportBackup:"Backup Download", importBackup:"Backup Import"
+    profilesTitle:"સાચવેલી કુંડળીઓ", profilesDesc:"ઘણી વ્યક્તિઓના રિપોર્ટ આ બ્રાઉઝરમાં સાચવો અથવા backup લો.", chooseProfile:"કુંડળી પસંદ કરો", saveProfile:"હાલની કુંડળી સાચવો", loadProfile:"ખોલો", deleteProfile:"દૂર કરો", exportBackup:"Backup Download", importBackup:"Backup Import", installApp:"App Install", offlineMode:"Offline", updateReady:"નવી આવૃત્તિ તૈયાર છે.", refreshApp:"Update"
   });
   Object.assign(api.copy.hi, {
     secondsLabel:"सेकंड", nodeModeLabel:"राहु–केतु गणना", meanNode:"Mean Node — पारंपरिक डिफॉल्ट", trueNode:"True Node — तात्कालिक गति आधारित", tabExpert:"अंतिम निष्कर्ष",
-    profilesTitle:"सहेजी गई कुंडलियां", profilesDesc:"कई व्यक्तियों की कुंडली इस ब्राउज़र में सहेजें या backup लें।", chooseProfile:"कुंडली चुनें", saveProfile:"वर्तमान कुंडली सहेजें", loadProfile:"खोलें", deleteProfile:"हटाएं", exportBackup:"Backup Download", importBackup:"Backup Import"
+    profilesTitle:"सहेजी गई कुंडलियां", profilesDesc:"कई व्यक्तियों की कुंडली इस ब्राउज़र में सहेजें या backup लें।", chooseProfile:"कुंडली चुनें", saveProfile:"वर्तमान कुंडली सहेजें", loadProfile:"खोलें", deleteProfile:"हटाएं", exportBackup:"Backup Download", importBackup:"Backup Import", installApp:"App Install", offlineMode:"Offline", updateReady:"नया संस्करण तैयार है।", refreshApp:"Update"
   });
   Object.assign(api.copy.en, {
     secondsLabel:"Seconds", nodeModeLabel:"Rahu–Ketu calculation", meanNode:"Mean Node — traditional default", trueNode:"True Node — instantaneous orbit", tabExpert:"Final synthesis",
-    profilesTitle:"Saved charts", profilesDesc:"Keep multiple charts in this browser or download a backup.", chooseProfile:"Choose a chart", saveProfile:"Save current chart", loadProfile:"Open", deleteProfile:"Remove", exportBackup:"Download backup", importBackup:"Import backup"
+    profilesTitle:"Saved charts", profilesDesc:"Keep multiple charts in this browser or download a backup.", chooseProfile:"Choose a chart", saveProfile:"Save current chart", loadProfile:"Open", deleteProfile:"Remove", exportBackup:"Download backup", importBackup:"Import backup", installApp:"Install App", offlineMode:"Offline", updateReady:"A new version is ready.", refreshApp:"Update"
   });
 
   function norm(value){return ((value%360)+360)%360;}

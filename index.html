@@ -4,9 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#35175f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="જન્માક્ષર">
   <meta name="description" content="લાહિરી અયનાંશ આધારિત ગુજરાતી વૈદિક જન્માક્ષર, કુંડળી, દશા અને પંચાંગ ગણતરી.">
   <title>જન્માક્ષર — વૈદિક કુંડળી</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%2335175f'/%3E%3Ccircle cx='32' cy='32' r='14' fill='none' stroke='%23f5c96b' stroke-width='4'/%3E%3Cpath d='M32 7v7M32 50v7M7 32h7M50 32h7M14.3 14.3l5 5M44.7 44.7l5 5M49.7 14.3l-5 5M19.3 44.7l-5 5' stroke='%23f5c96b' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -15,10 +21,14 @@
       <span class="brand-mark" aria-hidden="true">☼</span>
       <span><strong data-i18n="brandTitle">જન્માક્ષર</strong><small data-i18n="brandSub">વૈદિક કુંડળી</small></span>
     </a>
-    <div class="language-switch" aria-label="Language">
-      <button type="button" data-language="gu" aria-pressed="true">ગુજરાતી</button>
-      <button type="button" data-language="hi" aria-pressed="false">हिन्दी</button>
-      <button type="button" data-language="en" aria-pressed="false">English</button>
+    <div class="topbar-actions">
+      <span id="network-status" class="network-status" data-i18n="offlineMode" hidden>Offline</span>
+      <button id="install-app" class="install-app" type="button" data-i18n="installApp" hidden>App Install</button>
+      <div class="language-switch" aria-label="Language">
+        <button type="button" data-language="gu" aria-pressed="true">ગુજરાતી</button>
+        <button type="button" data-language="hi" aria-pressed="false">हिन्दी</button>
+        <button type="button" data-language="en" aria-pressed="false">English</button>
+      </div>
     </div>
   </header>
 
@@ -157,9 +167,11 @@
   </main>
 
   <footer><span data-i18n="brandTitle">જન્માક્ષર</span><span data-i18n="footerMethod">ગણતરી: લાહિરી અયનાંશ · Whole Sign ભાવ પદ્ધતિ</span></footer>
+  <div id="pwa-update" class="pwa-update" hidden><span data-i18n="updateReady">નવી આવૃત્તિ તૈયાર છે.</span><button id="refresh-app" type="button" data-i18n="refreshApp">Update</button></div>
   <script src="./vendor/astronomy.min.js"></script>
   <script src="./advanced.js"></script>
   <script src="./expert.js"></script>
   <script src="./app.js"></script>
+  <script src="./pwa.js"></script>
 </body>
 </html>
