@@ -42,7 +42,7 @@
             <input id="person-name" name="name" autocomplete="name" placeholder="તમારું નામ લખો" data-i18n-placeholder="namePlaceholder" required>
           </label>
 
-          <div class="field-row">
+          <div class="field-row time-fields">
             <label class="field">
               <span data-i18n="dateLabel">જન્મ તારીખ</span>
               <input id="birth-date" name="date" type="date" required>
@@ -51,7 +51,19 @@
               <span data-i18n="timeLabel">ચોક્કસ સમય</span>
               <input id="birth-time" name="time" type="time" step="60" required>
             </label>
+            <label class="field">
+              <span data-i18n="secondsLabel">સેકન્ડ</span>
+              <input id="birth-second" name="second" type="number" min="0" max="59" step="1" value="0" required>
+            </label>
           </div>
+
+          <label class="field full">
+            <span data-i18n="nodeModeLabel">રાહુ–કેતુ ગણતરી</span>
+            <select id="node-mode" name="nodeMode">
+              <option value="mean" data-i18n="meanNode">Mean Node — પરંપરાગત ડિફૉલ્ટ</option>
+              <option value="true" data-i18n="trueNode">True Node — તત્કાલ ગતિ આધારિત</option>
+            </select>
+          </label>
 
           <label class="field full">
             <span data-i18n="placeLabel">જન્મસ્થળ</span>
@@ -77,6 +89,21 @@
           <span aria-hidden="true">◈</span>
           <p><strong data-i18n="privacyTitle">ખાનગી ગણતરી</strong> <span data-i18n="privacyText">વિગતો આ બ્રાઉઝરમાં જ પ્રક્રિયા થાય છે.</span></p>
         </div>
+
+        <div class="profile-tools" aria-labelledby="profile-title">
+          <div><strong id="profile-title" data-i18n="profilesTitle">સાચવેલી કુંડળીઓ</strong><small data-i18n="profilesDesc">ઘણી વ્યક્તિઓના રિપોર્ટ આ બ્રાઉઝરમાં સાચવો અથવા backup લો.</small></div>
+          <select id="saved-profile" aria-label="Saved profiles"><option value="" data-i18n="chooseProfile">કુંડળી પસંદ કરો</option></select>
+          <div class="profile-actions">
+            <button id="save-profile" type="button" data-i18n="saveProfile">હાલની કુંડળી સાચવો</button>
+            <button id="load-profile" type="button" data-i18n="loadProfile">ખોલો</button>
+            <button id="delete-profile" type="button" data-i18n="deleteProfile">દૂર કરો</button>
+          </div>
+          <div class="profile-actions backup-actions">
+            <button id="export-profiles" type="button" data-i18n="exportBackup">Backup Download</button>
+            <label class="import-profile"><span data-i18n="importBackup">Backup Import</span><input id="import-profiles" type="file" accept="application/json,.json"></label>
+          </div>
+          <p id="profile-status" class="profile-status" aria-live="polite"></p>
+        </div>
       </aside>
 
       <section id="result-stage" class="result-stage" aria-live="polite" hidden>
@@ -95,6 +122,7 @@
 
           <nav class="report-tabs" aria-label="રિપોર્ટ વિભાગો" role="tablist">
             <button class="tab active" type="button" role="tab" aria-selected="true" data-tab="summary" data-i18n="tabSummary">સારાંશ</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="expert" data-i18n="tabExpert">અંતિમ તારણ</button>
             <button class="tab" type="button" role="tab" aria-selected="false" data-tab="charts" data-i18n="tabCharts">કુંડળી</button>
             <button class="tab" type="button" role="tab" aria-selected="false" data-tab="planets" data-i18n="tabPlanets">ગ્રહો</button>
             <button class="tab" type="button" role="tab" aria-selected="false" data-tab="houses" data-i18n="tabHouses">12 ભાવ</button>
@@ -109,6 +137,7 @@
           </nav>
 
           <div id="tab-summary" class="tab-panel active" role="tabpanel"></div>
+          <div id="tab-expert" class="tab-panel" role="tabpanel" hidden></div>
           <div id="tab-charts" class="tab-panel" role="tabpanel" hidden></div>
           <div id="tab-planets" class="tab-panel" role="tabpanel" hidden></div>
           <div id="tab-houses" class="tab-panel" role="tabpanel" hidden></div>
@@ -130,6 +159,7 @@
   <footer><span data-i18n="brandTitle">જન્માક્ષર</span><span data-i18n="footerMethod">ગણતરી: લાહિરી અયનાંશ · Whole Sign ભાવ પદ્ધતિ</span></footer>
   <script src="./vendor/astronomy.min.js"></script>
   <script src="./advanced.js"></script>
+  <script src="./expert.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>

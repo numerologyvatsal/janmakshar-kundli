@@ -232,6 +232,17 @@
     const T = ((date.getTime() / 86400000 + 2440587.5) - 2451545.0) / 36525;
     return norm(125.04452 - 1934.136261 * T + 0.0020708 * T * T + T * T * T / 450000);
   }
+  function trueNodeLongitude(date) {
+    const vectors=[-0.02,0,0.02].map((days)=>Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body.Moon,addDays(date,days),true)).vec);
+    const [before,current,after]=vectors;
+    const velocity={x:after.x-before.x,y:after.y-before.y,z:after.z-before.z};
+    const momentum={
+      x:current.y*velocity.z-current.z*velocity.y,
+      y:current.z*velocity.x-current.x*velocity.z,
+      z:current.x*velocity.y-current.y*velocity.x
+    };
+    return norm(Math.atan2(momentum.x,-momentum.y)*180/Math.PI);
+  }
   function tropicalPlanet(key, date) {
     const vector = Astronomy.GeoVector(Astronomy.Body[key], date, true);
     return norm(Astronomy.Ecliptic(vector).elon);
@@ -242,8 +253,9 @@
     const transits = {};
     PLANETS.forEach((key) => {
       let longitude;
-      if (key === "Rahu") longitude = norm(meanNodeLongitude(date) - ayanamsha);
-      else if (key === "Ketu") longitude = norm(meanNodeLongitude(date) - ayanamsha + 180);
+      const node = chart.input.nodeMode === "true" ? trueNodeLongitude(date) : meanNodeLongitude(date);
+      if (key === "Rahu") longitude = norm(node - ayanamsha);
+      else if (key === "Ketu") longitude = norm(node - ayanamsha + 180);
       else longitude = norm(tropicalPlanet(key, date) - ayanamsha);
       const sign = signOf(longitude);
       transits[key] = { longitude, sign, fromLagna:((sign-chart.ascSign+12)%12)+1, fromMoon:((sign-chart.moonSign+12)%12)+1 };
@@ -468,7 +480,7 @@
       <div class="accuracy-grid">
         <article><small>${choose(lang,"અયનાંશ","अयनांश","Ayanamsha")}</small><strong>${choose(lang,"લાહિરી અનુમાન","लाहिरी अनुमान","Lahiri approximation")}</strong><p>${chart.ayanamsha.toFixed(5)}°</p></article>
         <article><small>${choose(lang,"રાશિ અને ભાવ","राशि और भाव","Zodiac and houses")}</small><strong>${choose(lang,"નિરયણ · Whole Sign","निरयण · Whole Sign","Sidereal · Whole Sign")}</strong><p>${choose(lang,"ભાવચલિત માટે Equal House","भावचलित के लिए Equal House","Equal House for Bhava Chalit")}</p></article>
-        <article><small>${choose(lang,"ચંદ્ર નોડ","चंद्र नोड","Lunar node")}</small><strong>${choose(lang,"મીન રાહુ–કેતુ","मीन राहु–केतु","Mean Rahu–Ketu")}</strong><p>${choose(lang,"સોફ્ટવેર વિકલ્પ બદલાય તો અંશ બદલાઈ શકે","सॉफ्टवेयर विकल्प बदलने पर अंश बदल सकते हैं","Degrees may vary with software settings")}</p></article>
+        <article><small>${choose(lang,"ચંદ્ર નોડ","चंद्र नोड","Lunar node")}</small><strong>${chart.input.nodeMode==="true"?choose(lang,"ટ્રુ રાહુ–કેતુ","ट्रू राहु–केतु","True Rahu–Ketu"):choose(lang,"મીન રાહુ–કેતુ","मीन राहु–केतु","Mean Rahu–Ketu")}</strong><p>${choose(lang,"સોફ્ટવેર વિકલ્પ બદલાય તો અંશ બદલાઈ શકે","सॉफ्टवेयर विकल्प बदलने पर अंश बदल सकते हैं","Degrees may vary with software settings")}</p></article>
         <article class="${sensitive?"accuracy-warning":""}"><small>${choose(lang,"જન્મસમય સંવેદનશીલતા","जन्मसमय संवेदनशीलता","Birth-time sensitivity")}</small><strong>${sensitive?choose(lang,"±5 મિનિટે D9 બદલાય છે","±5 मिनट में D9 बदलता है","D9 changes within ±5 minutes"):choose(lang,"±5 મિનિટે D9 સ્થિર","±5 मिनट में D9 स्थिर","D9 stable within ±5 minutes")}</strong><p>${nameSign(a.timeSensitivity.minus5,lang)} · ${nameSign(a.timeSensitivity.exact,lang)} · ${nameSign(a.timeSensitivity.plus5,lang)}</p></article>
       </div>
 
@@ -551,19 +563,20 @@
     const sub=antar.find((p)=>date>=p.start&&date<p.end)||antar[antar.length-1];
     return {period,key,sub};
   }
-  function transitSignAt(key,date) {
+  function transitSignAt(key,date,nodeMode="mean") {
     const ayanamsha=lahiriAyanamsha(date);
-    if(key==="Rahu") return signOf(norm(meanNodeLongitude(date)-ayanamsha));
-    if(key==="Ketu") return signOf(norm(meanNodeLongitude(date)-ayanamsha+180));
+    const node=nodeMode==="true"?trueNodeLongitude(date):meanNodeLongitude(date);
+    if(key==="Rahu") return signOf(norm(node-ayanamsha));
+    if(key==="Ketu") return signOf(norm(node-ayanamsha+180));
     return signOf(norm(tropicalPlanet(key,date)-ayanamsha));
   }
   function localizedYearForecast(chart,year,lang) {
     const months=[];
     for(let month=0;month<12;month++){
       const date=new Date(Date.UTC(year,month,15,6,30));
-      const j=((transitSignAt("Jupiter",date)-chart.moonSign+12)%12)+1;
-      const s=((transitSignAt("Saturn",date)-chart.moonSign+12)%12)+1;
-      const r=((transitSignAt("Rahu",date)-chart.moonSign+12)%12)+1;
+      const j=((transitSignAt("Jupiter",date,chart.input.nodeMode)-chart.moonSign+12)%12)+1;
+      const s=((transitSignAt("Saturn",date,chart.input.nodeMode)-chart.moonSign+12)%12)+1;
+      const r=((transitSignAt("Rahu",date,chart.input.nodeMode)-chart.moonSign+12)%12)+1;
       const d=currentDashaAt(chart,date);
       let score=0;
       score += [2,5,7,9,11].includes(j)?2:-1;
@@ -600,7 +613,7 @@
     const strongest=PLANETS.map((key)=>a.strengths[key]).sort((x,y)=>y.score-x.score).slice(0,3).map((x)=>namePlanet(x.key,lang)).join(" · ");
     document.getElementById("tab-summary").innerHTML=`<div class="stats-grid">${statCard(lang==="hi"?"लग्न":"Ascendant",nameSign(chart.ascSign,lang),`${degreeText(chart.siderealAsc)} · ${lang==="hi"?"स्वामी":"Lord"} ${namePlanet(LORD_KEYS[chart.ascSign],lang)}`,"△")}${statCard(lang==="hi"?"चंद्र राशि":"Moon sign",nameSign(chart.moonSign,lang),degreeText(p.Moon.longitude),"☾")}${statCard(lang==="hi"?"जन्म नक्षत्र":"Birth Nakshatra",NAKSHATRA_NAMES[lang][chart.moonNak.index],`${lang==="hi"?"पाद":"Pada"} ${chart.moonNak.pada}`,"✦")}${statCard(lang==="hi"?"वर्तमान महादशा":"Current Mahadasha",namePlanet(GU_TO_KEY[chart.dasha.current.lord],lang),`${lang==="hi"?"तक":"until"} ${formatDate(chart.dasha.current.end,lang)}`,"◉")}</div>
       <h3 class="section-title">${lang==="hi"?"मुख्य अध्ययन":"Core reading"}</h3><div class="insight-grid"><article class="insight"><strong>${lang==="hi"?"व्यक्तित्व":"Personality"}</strong><p>${lang==="hi"?"नवजात लग्न का स्वभाव":"The Ascendant points to a temperament that is"} ${ASC_ALT[lang][chart.ascSign]}.</p></article><article class="insight"><strong>${lang==="hi"?"मन":"Mind"}</strong><p>${MOON_ALT[lang][chart.moonSign]}</p></article><article class="insight"><strong>${lang==="hi"?"सबसे समर्थ ग्रह":"Strongest indications"}</strong><p>${strongest}</p></article><article class="insight"><strong>${lang==="hi"?"वर्तमान फोकस":"Current focus"}</strong><p>${namePlanet(GU_TO_KEY[chart.dasha.current.lord],lang)} / ${namePlanet(a.dashaDepth.currentAntar.lord,lang)} / ${namePlanet(a.dashaDepth.currentPratyantar.lord,lang)}</p></article></div>
-      <div class="method-box"><div><small>${lang==="hi"?"अयनांश":"Ayanamsha"}</small><strong>Lahiri ${chart.ayanamsha.toFixed(4)}°</strong></div><div><small>${lang==="hi"?"भाव पद्धति":"House system"}</small><strong>Whole Sign</strong></div><div><small>${lang==="hi"?"नोड":"Nodes"}</small><strong>${lang==="hi"?"मीन राहु–केतु":"Mean Rahu–Ketu"}</strong></div></div>`;
+      <div class="method-box"><div><small>${lang==="hi"?"अयनांश":"Ayanamsha"}</small><strong>Lahiri ${chart.ayanamsha.toFixed(4)}°</strong></div><div><small>${lang==="hi"?"भाव पद्धति":"House system"}</small><strong>Whole Sign</strong></div><div><small>${lang==="hi"?"नोड":"Nodes"}</small><strong>${chart.input.nodeMode==="true"?(lang==="hi"?"ट्रू राहु–केतु":"True Rahu–Ketu"):(lang==="hi"?"मीन राहु–केतु":"Mean Rahu–Ketu")}</strong></div></div>`;
   }
 
   function renderLocalizedCharts(chart,lang) {
@@ -702,7 +715,7 @@
   }
 
   function renderLocalized(chart,lang) {
-    document.getElementById("report-meta").textContent=`${formatInputDate(chart.input.date,lang)} · ${chart.input.time} · ${translatedCity(chart.input.city,lang)}`;
+    document.getElementById("report-meta").textContent=`${formatInputDate(chart.input.date,lang)} · ${chart.input.time}:${String(chart.input.second||0).padStart(2,"0")} · ${translatedCity(chart.input.city,lang)}`;
     renderLocalizedSummary(chart,lang);
     renderLocalizedCharts(chart,lang);
     renderLocalizedPlanets(chart,lang);

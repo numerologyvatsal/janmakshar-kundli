@@ -299,10 +299,10 @@
     const pada = Math.floor(inside / (span / 4)) + 1;
     return { index, name: NAKSHATRAS[index][0], lord: NAKSHATRAS[index][1], pada, fraction: inside / span };
   }
-  function localDateToUtc(dateText, timeText, tz) {
+  function localDateToUtc(dateText, timeText, tz, seconds = 0) {
     const [y, m, d] = dateText.split("-").map(Number);
     const [hh, mm] = timeText.split(":").map(Number);
-    return new Date(Date.UTC(y, m - 1, d, hh, mm) - tz * 3600000);
+    return new Date(Date.UTC(y, m - 1, d, hh, mm, Number(seconds) || 0) - tz * 3600000);
   }
 
   function ascendantLongitude(date, latitude, longitude) {
@@ -319,12 +319,27 @@
     return norm(125.04452 - 1934.136261 * t + 0.0020708 * t * t + (t * t * t) / 450000);
   }
 
+  function trueNodeLongitude(date) {
+    const vectors = [-0.02, 0, 0.02].map((days) => {
+      const moment = addDays(date, days);
+      return Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body.Moon, moment, true)).vec;
+    });
+    const [before, current, after] = vectors;
+    const velocity = { x: after.x - before.x, y: after.y - before.y, z: after.z - before.z };
+    const angularMomentum = {
+      x: current.y * velocity.z - current.z * velocity.y,
+      y: current.z * velocity.x - current.x * velocity.z,
+      z: current.x * velocity.y - current.y * velocity.x
+    };
+    return norm(deg(Math.atan2(angularMomentum.x, -angularMomentum.y)));
+  }
+
   function tropicalPlanet(bodyName, date) {
     const vector = Astronomy.GeoVector(Astronomy.Body[bodyName], date, true);
     return norm(Astronomy.Ecliptic(vector).elon);
   }
 
-  function calculatePlanets(date, ayanamsha, ascSign) {
+  function calculatePlanets(date, ayanamsha, ascSign, nodeMode = "mean") {
     const result = {};
     ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"].forEach((key) => {
       const tropical = tropicalPlanet(key, date);
@@ -336,7 +351,8 @@
         nakshatra: nakshatraInfo(longitude)
       };
     });
-    const rahu = norm(meanNodeLongitude(date) - ayanamsha);
+    const nodeLongitude = nodeMode === "true" ? trueNodeLongitude(date) : meanNodeLongitude(date);
+    const rahu = norm(nodeLongitude - ayanamsha);
     result.Rahu = { key: "Rahu", longitude: rahu, sign: signIndex(rahu), house: houseFrom(rahu, ascSign), retrograde: true, nakshatra: nakshatraInfo(rahu) };
     const ketu = norm(rahu + 180);
     result.Ketu = { key: "Ketu", longitude: ketu, sign: signIndex(ketu), house: houseFrom(ketu, ascSign), retrograde: true, nakshatra: nakshatraInfo(ketu) };
@@ -354,12 +370,12 @@
   function navamsaSign(longitude) { return signIndex(norm(longitude * 9)); }
 
   function buildChart(input) {
-    const date = localDateToUtc(input.date, input.time, input.timezone);
+    const date = localDateToUtc(input.date, input.time, input.timezone, input.second);
     const ayanamsha = lahiriAyanamsha(date);
     const tropicalAsc = ascendantLongitude(date, input.latitude, input.longitude);
     const siderealAsc = norm(tropicalAsc - ayanamsha);
     const ascSign = signIndex(siderealAsc);
-    const planets = calculatePlanets(date, ayanamsha, ascSign);
+    const planets = calculatePlanets(date, ayanamsha, ascSign, input.nodeMode);
     const moonNak = planets.Moon.nakshatra;
     const chart = {
       input, date, ayanamsha, siderealAsc, ascSign, planets, moonNak,
@@ -445,8 +461,8 @@
     return score;
   }
 
-  function transitLongitude(key, date, ayanamsha) {
-    if (key === "Rahu") return norm(meanNodeLongitude(date) - ayanamsha);
+  function transitLongitude(key, date, ayanamsha, nodeMode = "mean") {
+    if (key === "Rahu") return norm((nodeMode === "true" ? trueNodeLongitude(date) : meanNodeLongitude(date)) - ayanamsha);
     return norm(tropicalPlanet(key, date) - ayanamsha);
   }
 
@@ -682,7 +698,7 @@
     const ayanamsha = lahiriAyanamsha(date);
     const jupiter = transitHouse(transitLongitude("Jupiter", date, ayanamsha), chart.moonSign);
     const saturn = transitHouse(transitLongitude("Saturn", date, ayanamsha), chart.moonSign);
-    const rahu = transitHouse(transitLongitude("Rahu", date, ayanamsha), chart.moonSign);
+    const rahu = transitHouse(transitLongitude("Rahu", date, ayanamsha, chart.input.nodeMode), chart.moonSign);
     const mars = transitHouse(transitLongitude("Mars", date, ayanamsha), chart.moonSign);
     const dasha = dashaAtDate(chart, date);
     const sadeSati = [12, 1, 2].includes(saturn);
@@ -801,7 +817,7 @@
       <div class="method-box">
         <div><small>અયનાંશ</small><strong>લાહિરી ${chart.ayanamsha.toFixed(4)}°</strong></div>
         <div><small>ભાવ પદ્ધતિ</small><strong>Whole Sign Houses</strong></div>
-        <div><small>નોડ્સ</small><strong>મીન રાહુ–કેતુ</strong></div>
+        <div><small>નોડ્સ</small><strong>${chart.input.nodeMode === "true" ? "ટ્રુ રાહુ–કેતુ" : "મીન રાહુ–કેતુ"}</strong></div>
       </div>`;
   }
 
@@ -875,7 +891,7 @@
     }).join("");
     $("#tab-planets").innerHTML = `
       <div class="table-wrap"><table><thead><tr><th>ગ્રહ</th><th>રાશિ</th><th>અંશ</th><th>નક્ષત્ર / પાદ</th><th>ભાવ</th><th>અવસ્થા</th></tr></thead><tbody>${rows}</tbody></table></div>
-      <p class="legend-note">ગ્રહોના અંશ નિરયણ (Sidereal) છે. રાહુ–કેતુ માટે મીન નોડ અને ભાવ માટે Whole Sign પદ્ધતિ વપરાઈ છે.</p>`;
+      <p class="legend-note">ગ્રહોના અંશ નિરયણ (Sidereal) છે. રાહુ–કેતુ માટે ${chart.input.nodeMode === "true" ? "ટ્રુ નોડ" : "મીન નોડ"} અને ભાવ માટે Whole Sign પદ્ધતિ વપરાઈ છે.</p>`;
   }
 
   function lordDignityNarrative(item) {
@@ -1287,7 +1303,7 @@
   function renderReport(chart) {
     latestChart = chart;
     $("#report-name").textContent = chart.input.name;
-    $("#report-meta").textContent = `${formatLocalInputDate(chart.input.date)} · ${chart.input.time} · ${chart.input.city}`;
+    $("#report-meta").textContent = `${formatLocalInputDate(chart.input.date)} · ${chart.input.time}:${pad2(chart.input.second || 0)} · ${chart.input.city}`;
     renderSummary(chart); renderCharts(chart); renderPlanets(chart); renderHouses(chart); renderNavamsa(chart); renderDasha(chart); renderFuture(chart); renderMarriage(chart); renderPanchang(chart); renderSignals(chart); renderReading(chart);
     if (window.JyotishAllInOne) window.JyotishAllInOne.render(chart, currentLanguage);
     $("#workspace").classList.remove("awaiting-report");
@@ -1330,7 +1346,7 @@
   }
 
   function setFormLocked(locked) {
-    ["#person-name", "#birth-date", "#birth-time", "#birth-city", "#latitude", "#longitude", "#timezone", "#toggle-coordinates", "#create-report"]
+    ["#person-name", "#birth-date", "#birth-time", "#birth-second", "#node-mode", "#birth-city", "#latitude", "#longitude", "#timezone", "#toggle-coordinates", "#create-report"]
       .forEach((selector) => { $(selector).disabled = locked; });
     const copy = window.JyotishAllInOne ? window.JyotishAllInOne.copy[currentLanguage] : null;
     $("#create-report-label").textContent = locked ? (copy ? copy.locked : "રીસેટ કર્યા પછી નવી કુંડળી") : (copy ? copy.create : "જન્માક્ષર બનાવો");
@@ -1344,7 +1360,7 @@
     try {
       const input = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
       if (!input || !input.name || !input.date || !input.time || !Number.isFinite(Number(input.latitude)) || !Number.isFinite(Number(input.longitude)) || !Number.isFinite(Number(input.timezone))) return null;
-      return { ...input, latitude: Number(input.latitude), longitude: Number(input.longitude), timezone: Number(input.timezone) };
+      return { ...input, second: Number(input.second) || 0, nodeMode: input.nodeMode === "true" ? "true" : "mean", latitude: Number(input.latitude), longitude: Number(input.longitude), timezone: Number(input.timezone) };
     } catch (_) { return null; }
   }
 
@@ -1352,6 +1368,8 @@
     $("#person-name").value = input.name;
     $("#birth-date").value = input.date;
     $("#birth-time").value = input.time;
+    $("#birth-second").value = Number(input.second) || 0;
+    $("#node-mode").value = input.nodeMode === "true" ? "true" : "mean";
     const cityIndex = CITIES.findIndex((city) => city[0] === input.city);
     citySelect.value = cityIndex >= 0 ? String(cityIndex) : "custom";
     $("#latitude").value = input.latitude;
@@ -1365,6 +1383,8 @@
     try { localStorage.removeItem(STORAGE_KEY); } catch (_) { /* Reset the visible report even without storage access. */ }
     latestChart = null;
     form.reset();
+    $("#birth-second").value = "0";
+    $("#node-mode").value = "mean";
     citySelect.value = "0";
     updateCoordinates();
     $("#coordinate-fields").hidden = true;
@@ -1381,20 +1401,23 @@
     const name = $("#person-name").value.trim();
     const date = $("#birth-date").value;
     const time = $("#birth-time").value;
+    const second = Number($("#birth-second").value);
+    const nodeMode = $("#node-mode").value === "true" ? "true" : "mean";
     const cityValue = citySelect.value;
     const latitude = Number($("#latitude").value);
     const longitude = Number($("#longitude").value);
     const timezone = Number($("#timezone").value);
     let message = "";
     if (!name || !date || !time || !cityValue) message = "નામ, જન્મતારીખ, ચોક્કસ સમય અને જન્મસ્થળ પૂરાં લખો.";
+    else if (!Number.isInteger(second) || second < 0 || second > 59) message = "સેકન્ડ 0 થી 59 વચ્ચે હોવા જોઈએ.";
     else if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) message = "અક્ષાંશ -90 થી 90 વચ્ચે હોવો જોઈએ.";
     else if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) message = "રેખાંશ -180 થી 180 વચ્ચે હોવો જોઈએ.";
     else if (!Number.isFinite(timezone) || timezone < -12 || timezone > 14) message = "UTC અંતર -12 થી +14 વચ્ચે હોવું જોઈએ.";
-    const birth = date && time ? localDateToUtc(date, time, timezone) : null;
+    const birth = date && time ? localDateToUtc(date, time, timezone, second) : null;
     if (!message && birth > new Date()) message = "જન્મતારીખ અને સમય ભવિષ્યમાં ન હોઈ શકે.";
     if (message) throw new Error(message);
     const city = cityValue === "custom" ? "કસ્ટમ સ્થળ" : CITIES[Number(cityValue)][0];
-    return { name, date, time, city, latitude, longitude, timezone };
+    return { name, date, time, second, nodeMode, city, latitude, longitude, timezone };
   }
 
   function localizedFormError(message) {
@@ -1402,6 +1425,7 @@
     const copy = currentLanguage === "hi" ? {
       engine: "गणना इंजन लोड नहीं हुआ। पृष्ठ फिर खोलकर प्रयास करें।",
       required: "नाम, जन्मतिथि, सटीक समय और जन्मस्थान पूरा भरें।",
+      second: "सेकंड 0 से 59 के बीच होने चाहिए।",
       latitude: "अक्षांश -90 से 90 के बीच होना चाहिए।",
       longitude: "देशांतर -180 से 180 के बीच होना चाहिए।",
       timezone: "UTC अंतर -12 से +14 के बीच होना चाहिए।",
@@ -1410,6 +1434,7 @@
     } : {
       engine: "The calculation engine did not load. Reload the page and try again.",
       required: "Enter the name, birth date, exact time and birthplace.",
+      second: "Seconds must be between 0 and 59.",
       latitude: "Latitude must be between -90 and 90.",
       longitude: "Longitude must be between -180 and 180.",
       timezone: "UTC offset must be between -12 and +14.",
@@ -1419,6 +1444,7 @@
     if (!message) return copy.generic;
     if (message.includes("એન્જિન")) return copy.engine;
     if (message.includes("પૂરાં લખો")) return copy.required;
+    if (message.includes("સેકન્ડ")) return copy.second;
     if (message.includes("અક્ષાંશ")) return copy.latitude;
     if (message.includes("રેખાંશ")) return copy.longitude;
     if (message.includes("UTC")) return copy.timezone;
