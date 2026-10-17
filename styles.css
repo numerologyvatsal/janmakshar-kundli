@@ -595,21 +595,45 @@ footer span:first-child { color: var(--gold-soft); font-weight: 850; font-size: 
 
 @media print {
   @page { size: A4 portrait; margin: 9mm; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
   html, body { max-width: none; overflow: visible; }
-  body { background: white; font-size: 9.5pt; line-height: 1.42; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  body { background: white; font-size: 9pt; line-height: 1.38; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .topbar, .intro, .input-panel, .report-tabs, .secondary-button, .disclaimer, footer, .pwa-update { display: none !important; }
   .page-shell { width: 100%; }
   .workspace { display: block; }
   .result-stage, .report { min-height: 0; overflow: visible; box-shadow: none; border: 0; }
-  .report-top { padding: 14px 17px; background: var(--purple) !important; }
+  .report-top { padding: 12px 15px; background: var(--purple) !important; break-inside: avoid-page; page-break-inside: avoid; }
   .report-top h2 { font-size: 18pt; }
   .report-meta { font-size: 8pt; }
-  .tab-panel, .tab-panel[hidden] { display: block !important; min-width: 0; overflow: visible !important; padding: 12px 0 4px; break-inside: auto; page-break-inside: auto; }
-  .tab-panel + .tab-panel { break-before: auto; page-break-before: auto; }
-  .tab-panel::before { content: attr(data-print-title); display: block; margin: 4px 0 8px; color: var(--purple); font-size: 15pt; font-weight: 800; break-after: avoid; page-break-after: avoid; }
-  .section-title { margin: 15px 0 8px; font-size: 11pt; break-after: avoid; page-break-after: avoid; }
+  .tab-panel, .tab-panel[hidden] { display: block !important; min-width: 0; overflow: visible !important; padding: 9px 0 0; break-inside: auto; page-break-inside: auto; }
+  .tab-panel + .tab-panel { break-before: page; page-break-before: always; }
+  .tab-panel::before { content: attr(data-print-title); display: block; margin: 4px 0 8px; color: var(--purple); font-size: 15pt; font-weight: 800; break-after: avoid-page; page-break-after: avoid; }
+  h1, h2, h3, h4, summary, .section-title { break-after: avoid-page; page-break-after: avoid; }
+  .section-title { margin: 11px 0 6px; font-size: 10.5pt; }
   #report details > * { display: block !important; }
   p, li { orphans: 3; widows: 3; }
+
+  /* Global report rule: a visible box never breaks between two pages. */
+  #report article,
+  #report details,
+  #report [class*="-card"],
+  #report [class*="-hero"],
+  #report [class*="-note"],
+  #report [class*="-box"],
+  #report [class*="-alert"],
+  #report [class*="-status"],
+  #report [class*="-block"],
+  #report [class*="grid"] > *,
+  .house-intro, .navamsa-hero, .marriage-hero, .advanced-hero, .expert-hero,
+  .method-box, .current-dasha, .period-highlights, .future-hero,
+  .legend-note, .future-disclaimer, .expert-alert, .navamsa-note,
+  .panchang-grid, .auspicious-grid, .stats-grid, .marriage-stats,
+  .accuracy-grid, .jaimini-grid, .future-areas, .remedy-grid,
+  .advanced-two-col > section, .timeline-item {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+  }
+
   .stats-grid { grid-template-columns: repeat(4,minmax(0,1fr)); gap: 7px; }
   .insight-grid, .reading-grid, .charts-grid, .verdict-grid, .navamsa-reading-grid, .navamsa-balance, .marriage-factors, .period-highlights { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
   .panchang-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
@@ -618,19 +642,85 @@ footer span:first-child { color: var(--gold-soft); font-weight: 850; font-size: 
   .future-areas, .accuracy-grid, .jaimini-grid { grid-template-columns: repeat(4,minmax(0,1fr)); gap: 7px; }
   .month-grid, .marriage-stats, .remedy-grid { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; }
   .method-box { grid-template-columns: repeat(3,minmax(0,1fr)); }
-  .table-wrap { overflow: visible; }
+
+  /* Long tables split only between complete rows and repeat the heading. */
+  .table-wrap { overflow: visible; border-radius: 8px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
   table { font-size: 7.5pt; break-inside: auto; page-break-inside: auto; }
   thead { display: table-header-group; }
   tfoot { display: table-footer-group; }
   th, td { padding: 5px 6px; }
-  tr,
-  .chart-card, .stat-card, .insight, .reading-card, .signal, .verdict-card,
+  tr { break-inside: avoid-page; page-break-inside: avoid; }
+  #tab-planets > .table-wrap,
+  #tab-houses > .table-wrap,
+  #tab-marriage > .table-wrap,
+  #tab-expert > .table-wrap:not(.timeline-table),
+  #tab-advanced > .table-wrap,
+  .saturn-table {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+  }
+
+  /* Two compact charts, then the North Indian chart and guide on one page. */
+  .charts-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; align-items: start; }
+  .chart-card { max-width: none; width: auto; margin: 0; padding: 9px; align-self: start; break-inside: avoid-page; page-break-inside: avoid; }
+  .chart-card h3 { font-size: 9.5pt; }
+  .chart-card > p { margin-bottom: 6px; font-size: 7pt; }
+  .north-d1-card { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0,.8fr) minmax(0,1.2fr); gap: 9px; align-items: start; break-before: page; page-break-before: always; }
+  .north-d1-card > h3 { grid-column: 1 / -1; }
+  .north-d1-card > .north-chart { grid-column: 1; grid-row: 2; }
+  .north-d1-card > .chart-guide { grid-column: 2; grid-row: 2; margin-top: 0; }
+  .chart-guide { padding: 8px; border-radius: 8px; break-inside: avoid-page; page-break-inside: avoid; }
+  .chart-guide h4 { margin-bottom: 5px; font-size: 7.8pt; }
+  .chart-guide h4:not(:first-child) { margin-top: 8px; }
+  .chart-guide-points { gap: 3px; }
+  .chart-guide-points p { padding-bottom: 3px; grid-template-columns: 72px 1fr; gap: 5px; font-size: 6.5pt; line-height: 1.28; }
+  .planet-key { margin-top: 6px; gap: 3px; }
+  .planet-key b { font-size: 6.8pt; }
+  .planet-key span { padding: 2px 4px; font-size: 6.2pt; }
+  .house-key { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 3px; }
+  .house-key div { padding: 4px; border-radius: 6px; }
+  .house-key b { font-size: 6.3pt; }
+  .house-key span { margin-top: 1px; font-size: 5.9pt; line-height: 1.24; }
+
+  /* Each detailed house becomes a compact, complete print page. */
+  .house-intro { margin-bottom: 7px; padding: 9px 11px; gap: 10px; }
+  .house-intro strong { font-size: 10pt; }
+  .house-intro p { font-size: 7pt; line-height: 1.3; }
+  .house-list { display: block; }
+  .house-card { margin-bottom: 0; break-inside: avoid-page; page-break-inside: avoid; }
+  .house-card + .house-card { break-before: page; page-break-before: always; }
+  .house-card summary { grid-template-columns: 28px minmax(0,1fr) auto; gap: 6px; padding: 6px 8px; }
+  .house-number { width: 27px; height: 27px; font-size: 7.2pt; }
+  .house-card summary small { font-size: 5.9pt; }
+  .house-card summary strong { font-size: 7.8pt; }
+  .house-card summary em { padding: 2px 5px; font-size: 5.8pt; }
+  .house-body { padding: 0 7px 7px 9px; }
+  .house-body p { margin: 3px 0 0; font-size: 7pt; line-height: 1.27; }
+  .house-structure { grid-template-columns: repeat(5,minmax(0,1fr)); gap: 3px; padding-top: 5px; }
+  .house-structure span { padding: 4px 5px; border-radius: 6px; }
+  .house-structure small { font-size: 5.6pt; }
+  .house-structure b { margin-top: 1px; font-size: 6.4pt; }
+  .house-reading-grid { margin-top: 5px; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .house-reading-block { padding: 5px 6px; border-radius: 7px; break-inside: avoid-page; page-break-inside: avoid; }
+  .house-reading-block h4 { font-size: 7.2pt; }
+  .house-reading-block p + p { margin-top: 3px; padding-top: 3px; }
+
+  .navamsa-house-list { display: block; }
+  .navamsa-house-card { margin-bottom: 5px; break-inside: avoid-page; page-break-inside: avoid; }
+  .navamsa-house-card summary { padding: 7px 9px; }
+  .navamsa-house-body { padding: 7px 9px 8px; }
+  .navamsa-house-body h4 { margin-top: 6px; font-size: 7.6pt; }
+  .navamsa-house-body p { margin-top: 3px; font-size: 7pt; line-height: 1.3; }
+  .navamsa-facts { gap: 4px; }
+  .navamsa-facts span { padding: 5px; }
+
+  .stat-card, .insight, .reading-card, .signal, .verdict-card,
   .expert-varga, .remedy-grid article, .panchang-card, .auspicious-grid article,
-  .house-reading-block, .navamsa-reading-grid article, .navamsa-balance section,
+  .navamsa-reading-grid article, .navamsa-balance section,
   .current-dasha > div, .future-year-card, .period-box, .future-area, .month-card,
   .marriage-stats article, .marriage-factors article, .jaimini-grid article,
-  .advanced-yoga-grid article, .expert-alert, .legend-note, .future-disclaimer {
-    break-inside: avoid;
+  .advanced-yoga-grid article, .varga-card {
+    break-inside: avoid-page;
     page-break-inside: avoid;
   }
 }
