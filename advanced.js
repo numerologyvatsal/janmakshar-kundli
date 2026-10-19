@@ -348,7 +348,7 @@
       transits:calculateTransits(chart),
       jaimini:calculateJaimini(chart),
       yogas:calculateAdvancedYogas(chart),
-      timeSensitivity:{minus5:d9AscAtOffset(chart,-5),exact:vargas.D9.ascSign,plus5:d9AscAtOffset(chart,5)}
+      timeSensitivity:{minus5:d9AscAtOffset(chart,-5),minus1:d9AscAtOffset(chart,-1),exact:vargas.D9.ascSign,plus1:d9AscAtOffset(chart,1),plus5:d9AscAtOffset(chart,5)}
     };
   }
 
@@ -458,7 +458,10 @@
     const strengthRows=PLANETS.map((key)=>{
       const item=a.strengths[key];
       const notes=[];
-      if(item.combust) notes.push(choose(lang,"અસ્ત નજીક","अस्त के निकट","Near combustion"));
+      if(item.combust) {
+        const distance=angularDistance(chart.planets[key].longitude,chart.planets.Sun.longitude).toFixed(1);
+        notes.push(choose(lang,`અસ્ત (સૂર્યથી ${distance}°)`,`अस्त (सूर्य से ${distance}°)`,`Combust (${distance}° from Sun)`));
+      }
       if(item.retrograde) notes.push(choose(lang,"વક્રી","वक्री","Retrograde"));
       if(a.vargas.D9.planets[key].vargottama) notes.push(choose(lang,"D9 વર્ગોત્તમ","D9 वर्गोत्तम","D9 Vargottama"));
       return `<tr><td class="planet-name">${namePlanet(key,lang)}</td><td>${dignityLabel(item.dignity,lang)}</td><td>${chart.planets[key].house}</td><td><div class="strength-meter"><span style="width:${item.score}%"></span></div><b>${item.score}/100 · ${strengthLabel(item.score,lang)}</b></td><td>${notes.join(" · ")||"—"}</td></tr>`;
@@ -473,6 +476,7 @@
     const m=a.yogas.manglik;
     const manglikText=[`${choose(lang,"લગ્ન","लग्न","Ascendant")}: ${m.lagna.house}`,`${namePlanet("Moon",lang)}: ${m.moon.house}`,`${namePlanet("Venus",lang)}: ${m.venus.house}`].join(" · ");
     const sensitive=a.timeSensitivity.minus5!==a.timeSensitivity.exact||a.timeSensitivity.plus5!==a.timeSensitivity.exact;
+    const verySensitive=a.timeSensitivity.minus1!==a.timeSensitivity.exact||a.timeSensitivity.plus1!==a.timeSensitivity.exact;
     const j=a.jaimini;
     target.innerHTML=`
       <div class="advanced-hero"><div><small>${choose(lang,"એક જ જગ્યાએ ઊંડું જ્યોતિષ વિશ્લેષણ","एक ही स्थान पर गहन ज्योतिष विश्लेषण","Deep Jyotish analysis in one place")}</small><strong>${choose(lang,"ગ્રહબળ, દશા, ગોચર, અષ્ટકવર્ગ અને વર્ગકુંડળી","ग्रहबल, दशा, गोचर, अष्टकवर्ग और वर्ग कुंडली","Planet strength, dasha, transits, Ashtakavarga and Vargas")}</strong></div><p>${choose(lang,"ગણતરી અને અર્થઘટન અલગ રાખવામાં આવ્યા છે. જ્યાં સંપૂર્ણ ષડ્બળ માટે જરૂરી ખગોળીય ઘટકો ઉપલબ્ધ નથી ત્યાં સ્કોરને સ્પષ્ટ રીતે સંકેતાત્મક બતાવ્યો છે.","गणना और व्याख्या अलग रखी गई है। जहां पूर्ण षड्बल के लिए आवश्यक खगोलीय घटक उपलब्ध नहीं हैं, वहां स्कोर को स्पष्ट रूप से संकेतात्मक बताया गया है।","Calculation and interpretation are separated. Where the astronomical inputs for full classical Shadbala are unavailable, the score is explicitly labelled indicative.")}</p></div>
@@ -481,7 +485,7 @@
         <article><small>${choose(lang,"અયનાંશ","अयनांश","Ayanamsha")}</small><strong>${choose(lang,"લાહિરી અનુમાન","लाहिरी अनुमान","Lahiri approximation")}</strong><p>${chart.ayanamsha.toFixed(5)}°</p></article>
         <article><small>${choose(lang,"રાશિ અને ભાવ","राशि और भाव","Zodiac and houses")}</small><strong>${choose(lang,"નિરયણ · Whole Sign","निरयण · Whole Sign","Sidereal · Whole Sign")}</strong><p>${choose(lang,"ભાવચલિત માટે Equal House","भावचलित के लिए Equal House","Equal House for Bhava Chalit")}</p></article>
         <article><small>${choose(lang,"ચંદ્ર નોડ","चंद्र नोड","Lunar node")}</small><strong>${chart.input.nodeMode==="true"?choose(lang,"ટ્રુ રાહુ–કેતુ","ट्रू राहु–केतु","True Rahu–Ketu"):choose(lang,"મીન રાહુ–કેતુ","मीन राहु–केतु","Mean Rahu–Ketu")}</strong><p>${choose(lang,"સોફ્ટવેર વિકલ્પ બદલાય તો અંશ બદલાઈ શકે","सॉफ्टवेयर विकल्प बदलने पर अंश बदल सकते हैं","Degrees may vary with software settings")}</p></article>
-        <article class="${sensitive?"accuracy-warning":""}"><small>${choose(lang,"જન્મસમય સંવેદનશીલતા","जन्मसमय संवेदनशीलता","Birth-time sensitivity")}</small><strong>${sensitive?choose(lang,"±5 મિનિટે D9 બદલાય છે","±5 मिनट में D9 बदलता है","D9 changes within ±5 minutes"):choose(lang,"±5 મિનિટે D9 સ્થિર","±5 मिनट में D9 स्थिर","D9 stable within ±5 minutes")}</strong><p>${nameSign(a.timeSensitivity.minus5,lang)} · ${nameSign(a.timeSensitivity.exact,lang)} · ${nameSign(a.timeSensitivity.plus5,lang)}</p></article>
+        <article class="${sensitive?"accuracy-warning":""}"><small>${choose(lang,"જન્મસમય સંવેદનશીલતા","जन्मसमय संवेदनशीलता","Birth-time sensitivity")}</small><strong>${verySensitive?choose(lang,"±1 મિનિટમાં D9 બદલાઈ શકે","±1 मिनट में D9 बदल सकता है","D9 may change within ±1 minute"):sensitive?choose(lang,"±5 મિનિટમાં D9 બદલાઈ શકે","±5 मिनट में D9 बदल सकता है","D9 may change within ±5 minutes"):choose(lang,"±5 મિનિટે D9 સ્થિર","±5 मिनट में D9 स्थिर","D9 stable within ±5 minutes")}</strong><p>${nameSign(a.timeSensitivity.minus5,lang)} · ${nameSign(a.timeSensitivity.exact,lang)} · ${nameSign(a.timeSensitivity.plus5,lang)}</p></article>
       </div>
 
       <h3 class="section-title">${choose(lang,"ગ્રહબળ — સંકેતાત્મક સંયુક્ત સ્કોર","ग्रहबल — संकेतात्मक संयुक्त स्कोर","Planet strength — indicative composite score")}</h3>

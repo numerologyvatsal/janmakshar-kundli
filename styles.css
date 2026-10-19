@@ -595,6 +595,9 @@ footer span:first-child { color: var(--gold-soft); font-weight: 850; font-size: 
 
 @media print {
   @page { size: A4 portrait; margin: 9mm; }
+  html, body, #report, #report * { font-family: "Noto Sans Gujarati", "Nirmala UI", "Shruti", sans-serif !important; letter-spacing: 0 !important; }
+  #report p, #report td, #report li, #report small, #report span { color: #2f2734; opacity: 1; }
+  #report .report-top, #report .report-top * { color: #fff; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   html, body { max-width: none; overflow: visible; }
   body { background: white; font-size: 9pt; line-height: 1.38; print-color-adjust: exact; -webkit-print-color-adjust: exact; }

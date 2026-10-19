@@ -728,8 +728,10 @@
     const months = Array.from({ length: 12 }, (_, month) => monthForecast(chart, year, month));
     const average = months.reduce((sum, item) => sum + item.score, 0) / months.length;
     const representative = months[5];
-    const favorable = [...months].sort((a, b) => b.score - a.score || a.month - b.month).slice(0, 3);
-    const caution = [...months].sort((a, b) => a.score - b.score || a.month - b.month).slice(0, 3);
+    const ranked = [...months].sort((a, b) => b.score - a.score || a.month - b.month);
+    const bestScore = ranked[0].score;
+    const favorable = ranked.filter((item) => item.score === bestScore || item.score >= 2).slice(0, 5);
+    const caution = [...months].filter((item) => item.score < 0).sort((a, b) => a.score - b.score || a.month - b.month).slice(0, 3);
     let headline;
     if (average >= 2.5) headline = "વિસ્તાર અને આગળ વધવાનો મજબૂત સમય";
     else if (average >= 1) headline = "ધીમી પરંતુ સ્પષ્ટ પ્રગતિનું વર્ષ";
@@ -759,7 +761,11 @@
     const kendra = (house) => [1, 4, 7, 10].includes(house);
     const moonToJupiter = ((p.Jupiter.sign - p.Moon.sign + 12) % 12) + 1;
 
-    if (sameSign("Sun", "Mercury")) signals.push({ type: "positive", icon: "☉", title: "બુધાદિત્ય યોગનો સંકેત", text: "સૂર્ય અને બુધ એક રાશિમાં હોવાથી બુદ્ધિ, આયોજન અને અભિવ્યક્તિ સાથે કામ કરવાની ક્ષમતા મજબૂત બની શકે છે." });
+    if (sameSign("Sun", "Mercury")) {
+      const mercuryDistance=Math.min(Math.abs(p.Sun.longitude-p.Mercury.longitude),360-Math.abs(p.Sun.longitude-p.Mercury.longitude));
+      const combust=mercuryDistance<=14;
+      signals.push({ type: combust ? "mixed" : "positive", icon: "☉", title: combust ? "બુધાદિત્ય યોગ—અસ્તથી નબળો" : "બુધાદિત્ય યોગનો સંકેત", text: combust ? `સૂર્ય–બુધ એક રાશિમાં છે, પરંતુ અંતર ${mercuryDistance.toFixed(1)}° હોવાથી પરંપરાગત 14° ઓર્બ પ્રમાણે બુધ અસ્ત છે; યોગનું ફળ સંયમિત ગણવું.` : "સૂર્ય અને બુધ એક રાશિમાં હોવાથી બુદ્ધિ, આયોજન અને અભિવ્યક્તિ સાથે કામ કરવાની ક્ષમતા મજબૂત બની શકે છે." });
+    }
     if ([1, 4, 7, 10].includes(moonToJupiter)) signals.push({ type: "positive", icon: "♃", title: "ગજકેસરી યોગનો સંકેત", text: "ચંદ્રથી ગુરુ કેન્દ્રમાં હોવાથી જ્ઞાન, પ્રતિષ્ઠા અને યોગ્ય સમયે સહાય મળવાના શુભ સંકેતો બને છે." });
     if (sameSign("Moon", "Mars")) signals.push({ type: "positive", icon: "◐", title: "ચંદ્ર–મંગળ યોગનો સંકેત", text: "ભાવના અને ક્રિયાશક્તિ સાથે આવે છે; વેપારી સમજ વધે શકે, પણ ઉતાવળથી નિર્ણય ટાળવો." });
     if (sameSign("Jupiter", "Rahu") || sameSign("Jupiter", "Ketu")) signals.push({ type: "caution", icon: "◇", title: "ગુરુ ચાંડાલ સંયોગ", text: "ગુરુ સાથે રાહુ અથવા કેતુનો સંયોગ માન્યતાઓ અને માર્ગદર્શન અંગે ગૂંચવણ આપી શકે; તપાસીને નિર્ણય લેવો શુભ." });
@@ -1126,7 +1132,7 @@
       </div>
       <h3 class="section-title">વિમશોત્તરી મહાદશા ક્રમ</h3>
       <div class="timeline">${periods}</div>
-      <p class="legend-note">જન્મ સમયે પ્રથમ મહાદશાનું અંદાજિત બેલેન્સ ${chart.dasha.birthBalanceYears.toFixed(2)} વર્ષ હતું. તારીખો 365.2425 દિવસના વર્ષથી ગણાયેલી છે.</p>`;
+      <p class="legend-note">જન્મ સમયે પ્રથમ મહાદશાનું અંદાજિત બેલેન્સ ${chart.dasha.birthBalanceYears.toFixed(2)} વર્ષ હતું. આ સાઇટ 365.2425 દિવસના વર્ષનું એકસરખું convention વાપરે છે; 365.25 અથવા 360 દિવસ વાપરતા બીજા softwareમાં તારીખો થોડા દિવસ બદલાઈ શકે છે.</p>`;
   }
 
   function renderFuture(chart, selectedYear) {
@@ -1171,8 +1177,8 @@
       <p class="legend-note">સાડાસાતી ચંદ્રથી શનિના 12મા, 1લા અને 2જા ગોચર પર તથા નાની પનોતી 4થા અને 8મા ગોચર પર દર્શાવવામાં આવી છે. વક્રી ગતિને કારણે નજીકના સમયમાં એકથી વધુ પ્રવેશ દેખાઈ શકે છે.</p>
 
       <div class="period-highlights">
-        <article class="period-box"><strong>સહાયક મહિના</strong><div class="month-chips">${annual.favorable.map((m) => `<span>${MONTHS_GU[m.month]}</span>`).join("")}</div></article>
-        <article class="period-box caution"><strong>વધુ સાવધાનીના મહિના</strong><div class="month-chips">${annual.caution.map((m) => `<span>${MONTHS_GU[m.month]}</span>`).join("")}</div></article>
+        <article class="period-box"><strong>સૌથી વધુ સહાયક મહિના</strong><div class="month-chips">${annual.favorable.map((m) => `<span>${MONTHS_GU[m.month]}</span>`).join("")}</div></article>
+        <article class="period-box ${annual.caution.length?"caution":""}"><strong>ખાસ સાવધાનીના મહિના</strong><div class="month-chips">${annual.caution.length?annual.caution.map((m) => `<span>${MONTHS_GU[m.month]}</span>`).join(""):"<span>કોઈ ખાસ નકારાત્મક મહિનો નથી</span>"}</div></article>
       </div>
 
       <h3 class="section-title">જીવનના મુખ્ય ક્ષેત્રો</h3>
@@ -1187,7 +1193,7 @@
           return `<article class="month-card ${month.status.className} ${currentMonth ? "current-month" : ""}">
             <header><strong>${MONTHS_GU[month.month]}</strong><span>${month.status.label}</span></header>
             <p>${month.theme}</p>
-            <div class="transit-line">${month.dasha.period.lord}–${month.dasha.sub.lord} દશા · ગુરુ ${month.jupiter}મા · શનિ ${month.saturn}મા ભાવ</div>
+            <div class="transit-line">${month.dasha.period.lord}–${month.dasha.sub.lord} દશા · ચંદ્ર રાશિથી: ગુરુ ${month.jupiter}મા ભાવ · શનિ ${month.saturn}મા ભાવ</div>
           </article>`;
         }).join("")}
       </div>
@@ -1211,7 +1217,7 @@
     $("#tab-marriage").innerHTML = `
       <div class="marriage-hero">
         <div><small>દામ્પત્ય અને સંબંધનું સંયુક્ત વાંચન</small><strong>${item.stability.label}</strong><p>સાતમો ભાવ, તેનો સ્વામી, શુક્ર, ગુરુ, નવાંશ D9 અને દશા-ગોચરને સાથે લઈને બનાવેલો પરંપરાગત સંકેત.</p></div>
-        <span class="marriage-probability ${item.remarriage.tone}">પુનર્લગ્ન સંભાવના<br><b>${item.remarriage.label}</b></span>
+        <span class="marriage-probability ${item.remarriage.tone}">સંબંધમાં બીજી શરૂઆતનો સંકેત<br><b>${item.remarriage.label}</b></span>
       </div>
 
       <div class="marriage-stats">
@@ -1229,14 +1235,14 @@
       </div>
 
       <details class="marriage-reasons">
-        <summary>પુનર્લગ્નની સંભાવના કયા સંકેતો પરથી?</summary>
+        <summary>બીજી શરૂઆતનો સંકેત કયા આધાર પરથી?</summary>
         <div>${item.remarriageReasons.map((reason) => `<span>${reason}</span>`).join("")}</div>
         <p>આમાંથી એક સંકેત એકલો પૂરતો નથી; અનેક સંકેત સાથે આવે ત્યારે જ સંભાવનાનું સ્તર વધે છે.</p>
       </details>
 
       <h3 class="section-title">લગ્ન માટે સહાયક અંદાજિત સમયગાળા</h3>
       <div class="table-wrap"><table><thead><tr><th>દશા</th><th>શરૂઆત</th><th>સમાપ્તિ</th><th>સહાયક કારણ</th></tr></thead><tbody>${windowRows}</tbody></table></div>
-      <p class="future-disclaimer">આ વિભાગ લગ્નની ચોક્કસ સંખ્યા કે ઘટના નક્કી કરતો નથી. “પુનર્લગ્ન સંભાવના”નો અર્થ એકથી વધુ ગંભીર સંબંધ, સગાઈ તૂટવી, અલગ રહેવાનો તબક્કો અથવા જીવનમાં બીજી શરૂઆત પણ હોઈ શકે છે. વાસ્તવિક સંબંધ, બંને વ્યક્તિની કુંડળી અને સ્વતંત્ર નિર્ણય હંમેશાં વધુ મહત્વના છે.</p>`;
+      <p class="future-disclaimer">આ વિભાગ લગ્નની ચોક્કસ સંખ્યા, છૂટાછેડા અથવા પુનર્લગ્ન નક્કી કરતો નથી. “બીજી શરૂઆત”નો સંકેત ગંભીર સંબંધ, તૂટેલી સગાઈ, અલગાવ પછી સમાધાન અથવા જીવનનો નવો તબક્કો પણ હોઈ શકે છે. નિર્ણય માટે બંને વ્યક્તિની કુંડળી, વાસ્તવિક સંબંધ અને સ્વતંત્ર પસંદગી વધુ મહત્વની છે.</p>`;
   }
 
   function renderPanchang(chart) {
